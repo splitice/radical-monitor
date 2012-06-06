@@ -11,6 +11,7 @@ use CLI\Daemon\Module\Interfaces\IModuleJob;
 use Monitor\DB;
 
 class MonitorDaemon extends ModuleBase implements IModuleJob {
+	const CHECK_EVERY = 600;
 	private $actions = array();
 	
 	function __construct(){
@@ -30,6 +31,8 @@ class MonitorDaemon extends ModuleBase implements IModuleJob {
 	}
 	
 	function Loop($parameters){
+		$start = time();
+		
 		foreach(DB\Check::getAll() as $check){
 			$known_status = array(array(),array());
 			$unknown_status = array();
@@ -57,6 +60,13 @@ class MonitorDaemon extends ModuleBase implements IModuleJob {
 			}
 			
 			$this->action('onCompleteCheck',array($check,$known_status,$unknown_status));
+		}
+		
+		$now = time();
+		$time_diff = $now - $start;
+		
+		if($time_diff < static::CHECK_EVERY){
+			Sleep(static::CHECK_EVERY - $time_diff);
 		}
 	}
 }

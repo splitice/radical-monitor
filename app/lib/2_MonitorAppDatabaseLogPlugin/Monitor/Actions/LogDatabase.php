@@ -43,8 +43,8 @@ class LogDatabase implements IMonitorAction {
 		}else{
 			//Update
 			$sql = $this->logTable->update()
-			->where('log_id',$row['log_id'])
-			->set('log_to',\DB::toTimeStamp(time()));
+						->where('log_id',$row['log_id'])
+						->set('log_to',\DB::toTimeStamp(time()));
 			$sql->Execute();
 		}
 		
