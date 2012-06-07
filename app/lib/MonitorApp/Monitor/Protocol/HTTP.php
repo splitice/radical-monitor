@@ -9,7 +9,11 @@ class HTTP {
 		$http = new Fetch($url);
 		$http->curl[CURLOPT_FOLLOWLOCATION] = false;
 		$http->curl[CURLOPT_TIMEOUT] = 15;
-		$response = $http->Get();
+		try{
+			$response = $http->Get();
+		}catch(\Exception $ex){
+			return false;
+		}
 		$code = (string)$response->getCode();
 		if($code{0} == '2' || $code{0} == '3')
 			return true;
