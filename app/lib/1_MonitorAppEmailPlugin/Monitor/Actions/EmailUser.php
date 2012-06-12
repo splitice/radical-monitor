@@ -21,15 +21,20 @@ class EmailUser implements IMonitorAction {
 	function onCompleteCheck(Check $check,$known_status,$unknown_status){
 		if($this->_do($known_status[0],false)){
 			if($this->_do($known_status[1],true)){
-				$this->_email($check,$known_status,$unknown_status);
+				if($known_status[0] || $known_status[1]){
+					$this->_email($check,$known_status,$unknown_status);
+				}
 			}
 		}
 	}
 	protected function _email(Check $check,$known_status,$unknown_status){
-		$check->Email($known_status[0],$known_status[0]);
+		$check->Email($known_status[1],$known_status[0]);
+		exit;
 	}
 	protected function _do($status,$pass){
 		$text_status = $pass?'up':'down';
+		
+		if(!$status) return true;
 		
 		foreach($status as $host){
 			$sql = $this->logTable->select('log_id,log_status')

@@ -19,7 +19,7 @@ class LogDatabase implements IMonitorAction {
 		$text_status = ($status?'up':'down');
 		
 		//Insert / Update Log
-		$sql = new LockTable(array('log'=>'write','check'=>'read','host'=>'read'));
+		//$sql = new LockTable(array('log'=>'write','check'=>'read','host'=>'read'));
 		
 		$sql = $this->logTable->select('log_id,log_status,log_to')
 				->where(array('host_id'=>$host->getId()))
@@ -35,22 +35,28 @@ class LogDatabase implements IMonitorAction {
 		}else{
 			$insert['from'] = time();
 		}
-		
+
 		if(!$res->num_rows || $row['log_status'] != $text_status){
 			//Insert
 			$sql = $this->logTable->fromSQL($insert);
-			$sql->Insert();
+			$this->execute[] = function() use($sql){
+				$sql->Insert();
+			};
 		}else{
 			//Update
 			$sql = $this->logTable->update()
 						->where('log_id',$row['log_id'])
 						->set('log_to',\DB::toTimeStamp(time()));
-			$sql->Execute();
+			$this->execute[] = function() use($sql){
+				$sql->Execute();
+			};
 		}
-		
-		$this->logTable->unlock();
 	}
+	protected $execute;
 	function onCompleteCheck(Check $check,$known_status,$unknown_status){
-		
+		foreach($this->execute as $k=>$v){
+			$v();
+			unset($this->execute[$k]);
+		}
 	}
 }
